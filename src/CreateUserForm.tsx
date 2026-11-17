@@ -6,6 +6,7 @@ import type { NewUser } from './types'
 interface Props {
   token: string
   onCreated: (user: NewUser) => void
+  onUnauthorized: () => void
 }
 
 // No hay endpoint de países: las opciones van escritas a mano.
@@ -17,7 +18,7 @@ const COUNTRIES = [
 const EMPTY_FORM = { name: '', age: '', email: '', password: '', countryId: '1' }
 
 // Práctica 5: alta de usuario (POST /user).
-export function CreateUserForm({ token, onCreated }: Props) {
+export function CreateUserForm({ token, onCreated, onUnauthorized }: Props) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +48,7 @@ export function CreateUserForm({ token, onCreated }: Props) {
           country_id: Number(form.countryId),
         }),
       })
+      if (response.status === 401) return onUnauthorized() // práctica 8
       const data = await response.json()
       if (!response.ok) {
         setError(errorMessage(data.detail)) // con sfer: Missing permission: write_users
