@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.vite
 *.local
 
 # Editor directories and files
@@ -35,3 +36,9 @@ htmlcov/
 .mypy_cache/
 # la base SQLite se genera (con los usuarios de prueba) al arrancar la API
 backend/database.db
+
+# Variables de entorno con valores propios (pueden tener credenciales).
+# Los .env.example y frontend/.env.development sí se versionan.
+.env
+.env.*.local
+!.env.example
