@@ -1,0 +1,30 @@
+# Levanta la API de clase (clase-1-sqlmodel) en un contenedor, sin instalar
+# Python en la máquina. Uso: docker compose up -d
+#
+# El código de la API se monta en solo lectura y se copia dentro del
+# contenedor: no se crea .venv ni se toca database.db en esa carpeta.
+# Cada arranque empieza con la base limpia (los usuarios de prueba).
+#
+# Si la API está en otra ruta: API_PATH=C:\ruta\a\clase-1-sqlmodel en un
+# archivo .env junto a este, o como variable de entorno.
+
+services:
+  api:
+    image: python:3.13-slim
+    container_name: tp2-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${API_PATH:-../../../profesor/backend/utn-tup-2026-python/clase-1-sqlmodel}:/src:ro
+      - pip-cache:/root/.cache/pip # que reinstalar las dependencias sea rápido
+    command: >
+      sh -c "rm -rf /app && cp -r /src /app && cd /app && rm -f database.db
+      && pip install -q --root-user-action=ignore --disable-pip-version-check -r requirements.txt
+      && uvicorn main:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 5s
+      start_period: 60s
+
+volumes:
+  pip-cache:
