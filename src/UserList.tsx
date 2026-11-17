@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { CreateUserForm } from './CreateUserForm'
 import { formatRoles } from './format'
 import type { User, UserDetail as UserDetailData } from './types'
 import { SearchForm } from './SearchForm'
@@ -54,6 +55,11 @@ export function UserList({ token }: { token: string }) {
     setQuery(newQuery)
   }
 
+  // práctica 5: el alta salió bien → se agrega a la lista sin volver a pedirla
+  function handleCreated(user: User) {
+    setUsers((prev) => [...prev, user])
+  }
+
   useEffect(() => {
     const headers = { Authorization: `Bearer ${token}` }
     const api = import.meta.env.VITE_API_URL
@@ -70,6 +76,7 @@ export function UserList({ token }: { token: string }) {
         Hola, {me?.name}
         {me && me.roles.length > 0 && ` (${formatRoles(me.roles)})`}
       </h1>
+      <CreateUserForm token={token} onCreated={handleCreated} />
       <SearchForm onSearch={applyQuery} onClear={() => applyQuery('')} />
       {/* práctica 2: mientras carga o si hubo error, eso va en lugar de la lista */}
       {loading && <p>Cargando...</p>}
