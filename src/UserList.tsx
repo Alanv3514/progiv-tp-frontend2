@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { User } from './types'
+import { formatRoles } from './format'
+import type { User, UserDetail as UserDetailData } from './types'
 import { SearchForm } from './SearchForm'
 import { UserDetail } from './UserDetail'
 
@@ -9,7 +10,8 @@ export function UserList({ token }: { token: string }) {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true) // práctica 2
   const [error, setError] = useState<string | null>(null)
-  const [me, setMe] = useState<User | null>(null)
+  // práctica 4: GET /user/{id} ya trae roles, así que me es el detalle completo
+  const [me, setMe] = useState<UserDetailData | null>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null) // práctica 1
   const [query, setQuery] = useState('') // práctica 3: '' = todos
 
@@ -64,7 +66,10 @@ export function UserList({ token }: { token: string }) {
 
   return (
     <>
-      <h1>Hola, {me?.name}</h1>
+      <h1>
+        Hola, {me?.name}
+        {me && me.roles.length > 0 && ` (${formatRoles(me.roles)})`}
+      </h1>
       <SearchForm onSearch={applyQuery} onClear={() => applyQuery('')} />
       {/* práctica 2: mientras carga o si hubo error, eso va en lugar de la lista */}
       {loading && <p>Cargando...</p>}

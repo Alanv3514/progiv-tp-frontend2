@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatRoles } from './format'
 import type { UserDetail as UserDetailData } from './types'
 
 interface Props {
@@ -49,7 +50,7 @@ export function UserDetail({ token, userId }: Props) {
         <dt>País</dt>
         <dd>{user.country?.name ?? '—'}</dd>
         <dt>Roles</dt>
-        <dd>{user.roles.map((role) => role.name).join(', ') || '—'}</dd>
+        <dd>{formatRoles(user.roles) || '—'}</dd>
       </dl>
     </section>
   )
