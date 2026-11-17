@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { CreateUserForm } from './CreateUserForm'
-import { formatRoles } from './format'
+import { errorMessage, formatRoles } from './format'
 import type { NewUser, User, UserDetail as UserDetailData } from './types'
 import { SearchForm } from './SearchForm'
 import { UserDetail } from './UserDetail'
+import { UserRow } from './UserRow'
 
 // Qué lista se está mostrando. La API no combina filtros: es una u otra.
 type ListView =
@@ -60,6 +61,8 @@ export function UserList({ token }: { token: string }) {
   const [me, setMe] = useState<UserDetailData | null>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null) // práctica 1
   const [view, setView] = useState<ListView>(ALL) // prácticas 3 y 6
+  const [deletingId, setDeletingId] = useState<number | null>(null) // práctica 7
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     let ignore = false // si cambia la vista antes de que llegue, se descarta
@@ -93,6 +96,7 @@ export function UserList({ token }: { token: string }) {
     if (listUrl(newView) === listUrl(view)) return // misma URL: el efecto no se dispararía
     setLoading(true)
     setError(null)
+    setDeleteError(null)
     setView(newView)
   }
 
@@ -101,6 +105,32 @@ export function UserList({ token }: { token: string }) {
   function handleCreated(user: NewUser) {
     if (!matchesView(user, view)) return
     setUsers((prev) => [...prev, { id: user.id, name: user.name }])
+  }
+
+  // práctica 7: DELETE /user/{id}. Si sale bien, se saca de la lista con
+  // filter sin volver a pedirla. El error (con sfer: 403 Missing permission:
+  // delete_users) se muestra arriba de la lista, sin reemplazarla.
+  async function handleDelete(user: User) {
+    if (!window.confirm(`¿Borrar a ${user.name}?`)) return
+    setDeleteError(null)
+    setDeletingId(user.id)
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/user/${user.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        setDeleteError(errorMessage(data.detail))
+        return
+      }
+      setUsers((prev) => prev.filter((u) => u.id !== user.id))
+      if (selectedId === user.id) setSelectedId(null) // no mostrar el detalle de un borrado
+    } catch {
+      setDeleteError('No se pudo conectar con la API')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   useEffect(() => {
@@ -135,14 +165,17 @@ export function UserList({ token }: { token: string }) {
       {loading && <p>Cargando...</p>}
       {error && <p>{error}</p>}
       {!loading && !error && users.length === 0 && <p>{emptyMessage(view)}</p>}
+      {deleteError && <p>{deleteError}</p>}
       {!loading && !error && users.length > 0 && (
         <ul>
           {users.map((user) => (
-            <li key={user.id}>
-              <button type="button" onClick={() => setSelectedId(user.id)}>
-                {user.name}
-              </button>
-            </li>
+            <UserRow
+              key={user.id}
+              user={user}
+              deleting={deletingId === user.id}
+              onSelect={setSelectedId}
+              onDelete={handleDelete}
+            />
           ))}
         </ul>
       )}

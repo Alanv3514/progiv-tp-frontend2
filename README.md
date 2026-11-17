@@ -58,7 +58,7 @@ La URL de la API está en `.env.development` (`VITE_API_URL`).
 | 4 | Mostrar mis roles en el saludo | `GET /user/{id}` | ✅ |
 | 5 | Alta de usuario | `POST /user` | ✅ |
 | 6 | Solo mayores de edad | `GET /user_mayores` | ✅ |
-| 7 | Borrar un usuario | `DELETE /user/{id}` | ⬜ |
+| 7 | Borrar un usuario | `DELETE /user/{id}` | ✅ |
 | 8 | Sesión vencida (401 → login) | todos | ⬜ |
 | 9 | Para pensar: código repetido | — | ⬜ |
 
@@ -67,3 +67,7 @@ La URL de la API está en `.env.development` (`VITE_API_URL`).
 ### Práctica 1: ¿por qué la lista no trae todos los datos?
 
 `GET /user` devuelve solo `id` y `name` porque es lo único que necesita la lista. Si trajera email, edad, país y roles de cada usuario, con 10.000 usuarios la respuesta sería enorme: la base tendría que resolver los joins con países y roles para todos, viajarían muchos más datos por la red y el navegador tendría que guardarlos, aunque el usuario mire el detalle de uno o dos. Pedir el detalle con `GET /user/{id}` solo al hacer clic cuesta un pedido más, pero es chico y se hace únicamente cuando hace falta. Además, la API expone lo mínimo indispensable (por ejemplo, no reparte los emails de todos).
+
+### Práctica 7: ¿está bien que el botón Borrar aparezca igual?
+
+No del todo. Con `sfer` el botón aparece, se confirma y recién ahí la API responde `403 Missing permission: delete_users`: el usuario descubre que no podía hacerlo después de intentarlo. Lo correcto es que el front sepa qué permisos tiene el usuario logueado y oculte (o deshabilite) lo que no puede hacer. Igual, ocultar el botón es solo una mejora de la experiencia: la seguridad la sigue dando la API, que es la que rechaza el pedido; desde el front cualquiera puede mandar el `DELETE` a mano. La guía lo resuelve en el paso 12.
