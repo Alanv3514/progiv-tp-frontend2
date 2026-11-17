@@ -94,3 +94,35 @@ Y aparecieron más repeticiones que el enunciado no lista:
 Lo mismo pasa con cualquier regla transversal: cambiar la URL base, agregar un header, tratar distinto el 403 o mejorar el mensaje de error de red implica recorrer todos los `fetch` a mano.
 
 **La solución (paso 8)** es tener un único lugar que sepa hablar con la API: una función `apiFetch` que arme la URL con `VITE_API_URL`, agregue el `Authorization`, revise `response.ok`, convierta el `detail` en un error y resuelva el 401 en un solo punto; funciones por recurso (`api/users.ts`: `getUsers`, `deleteUser`…) para que los componentes no vean URLs; y un hook `useFetch` que encapsule `loading`/`error`/`data`. Así un cambio de header se toca en **1 archivo y 1 línea**.
+
+## Después de las prácticas: refactor al paso 8
+
+Con la práctica 9 respondida, el código se pasó a la estructura del paso 8 de la guía, sin cambiar lo que hace la app:
+
+```
+src/
+├── api/
+│   ├── client.ts     apiFetch: URL base, token, response.ok, detail, 401 (un solo lugar)
+│   ├── auth.ts       login
+│   ├── users.ts      getUsers, getUser, getMe, searchUsers, getAdults, createUser, deleteUser
+│   └── types.ts      tipos de lo que viaja por HTTP
+├── hooks/
+│   └── useFetch.ts   loading / error / data (+ setData para alta y borrado sin volver a pedir)
+├── components/       CreateUserForm, SearchForm, UserDetail, UserRow (vista)
+├── pages/            LoginPage, UsersPage
+├── utils/            formatRoles, ListView (todos / búsqueda / mayores)
+└── App.tsx           sesión: token, Salir y qué hacer ante un 401
+```
+
+El mismo conteo de la práctica 9, después del refactor:
+
+| Qué | Antes | Después |
+|---|---|---|
+| `import.meta.env.VITE_API_URL` | 6 en 4 archivos | 1, en `api/client.ts` |
+| ``Authorization: `Bearer ${token}` `` | 5 en 3 archivos | 1, en `api/client.ts` |
+| `if (!response.ok)` | 7 en 4 archivos | 1, en `api/client.ts` |
+| `status === 401` | 6 en 3 archivos | 1, en `api/client.ts` |
+| `useState` de loading/error para pedidos `GET` | 3 componentes | 1 hook (`useFetch`) |
+| Prop `onUnauthorized` | `App` → `UserList` → `UserDetail` / `CreateUserForm` | ninguna: `App` registra el manejador con `setUnauthorizedHandler` |
+
+Cambiar el header del token ahora es **1 archivo y 1 línea**. Quedan `useState` de error propios solo en las acciones que no son un `GET` al montar (login, alta y borrado), porque su error se muestra junto al formulario o al botón.
