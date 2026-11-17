@@ -58,7 +58,16 @@ Frontend en React + TypeScript (Vite) que consume la API de clase `clase-1-sqlmo
 
 3. Abrir <http://localhost:5174> (usar `localhost`, no `127.0.0.1`). En el login hay botones para entrar con los usuarios de prueba.
 
-La URL de la API está en `frontend/.env.development` (`VITE_API_URL`).
+### Variables de entorno
+
+Las dos partes andan sin configurar nada; cada una trae un `.env.example` con lo que se puede cambiar.
+
+| Parte | Archivo | Variables | Para cambiarlas |
+|---|---|---|---|
+| Front | [`frontend/.env.example`](frontend/.env.example) | `VITE_API_URL` (URL de la API). El valor de desarrollo ya está en `frontend/.env.development`. | Copiar como `frontend/.env.local` |
+| API | [`backend/.env.example`](backend/.env.example) | `DB_ENGINE` (`sqlite` o `postgres`) y `DATABASE_URL` (solo con `postgres`). | Copiar como `backend/.env` (también lo toma `docker compose`) |
+
+Los `.env` y `.env.local` reales están en el `.gitignore`. En la API, la clave del JWT no es configurable: está escrita en `backend/dependencies.py`.
 
 ### Usuarios de prueba (contraseña `123`)
 
