@@ -31,12 +31,5 @@ export default function App() {
 
   if (!token) return <LoginPage notice={notice} onLogin={handleLogin} />
 
-  return (
-    <>
-      <button type="button" onClick={logout}>
-        Salir
-      </button>
-      <UsersPage />
-    </>
-  )
+  return <UsersPage onLogout={logout} />
 }
