@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react'
-
-interface User {
-  id: number
-  name: string
-}
+import type { User } from './types'
+import { UserDetail } from './UserDetail'
 
 // Base de los pasos 5 y 6 de la guía: lista de usuarios (GET /user)
 // y saludo al usuario logueado (GET /user/me/id → GET /user/{id}).
@@ -11,6 +8,7 @@ export function UserList({ token }: { token: string }) {
   const [users, setUsers] = useState<User[]>([])
   const [error, setError] = useState<string | null>(null)
   const [me, setMe] = useState<User | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(null) // práctica 1
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/user`, {
@@ -42,9 +40,16 @@ export function UserList({ token }: { token: string }) {
       <h1>Hola, {me?.name}</h1>
       <ul>
         {users.map((user) => (
-          <li key={user.id}>{user.name}</li>
+          <li key={user.id}>
+            <button type="button" onClick={() => setSelectedId(user.id)}>
+              {user.name}
+            </button>
+          </li>
         ))}
       </ul>
+      {selectedId !== null && (
+        <UserDetail key={selectedId} token={token} userId={selectedId} />
+      )}
     </>
   )
 }
