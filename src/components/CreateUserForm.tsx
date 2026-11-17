@@ -1,24 +1,16 @@
 import { useState } from 'react'
 import type { SubmitEvent } from 'react'
-import { errorMessage } from './format'
-import type { NewUser } from './types'
+import { COUNTRIES, createUser } from '../api/users'
+import type { NewUser } from '../api/types'
 
 interface Props {
-  token: string
   onCreated: (user: NewUser) => void
-  onUnauthorized: () => void
 }
-
-// No hay endpoint de países: las opciones van escritas a mano.
-const COUNTRIES = [
-  { id: 1, name: 'Argentina' },
-  { id: 2, name: 'Brasil' },
-]
 
 const EMPTY_FORM = { name: '', age: '', email: '', password: '', countryId: '1' }
 
 // Práctica 5: alta de usuario (POST /user).
-export function CreateUserForm({ token, onCreated, onUnauthorized }: Props) {
+export function CreateUserForm({ onCreated }: Props) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -34,32 +26,20 @@ export function CreateUserForm({ token, onCreated, onUnauthorized }: Props) {
     setSuccess(null)
     setSending(true)
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: form.name,
-          age: Number(form.age), // los inputs siempre dan texto
-          email: form.email,
-          password: form.password,
-          country_id: Number(form.countryId),
-        }),
+      const age = Number(form.age) // los inputs siempre dan texto
+      const { id } = await createUser({
+        name: form.name,
+        age,
+        email: form.email,
+        password: form.password,
+        country_id: Number(form.countryId),
       })
-      if (response.status === 401) return onUnauthorized() // práctica 8
-      const data = await response.json()
-      if (!response.ok) {
-        setError(errorMessage(data.detail)) // con sfer: Missing permission: write_users
-        return
-      }
       // la API devuelve solo { id }; el resto sale del form
-      onCreated({ id: data.id, name: form.name, age: Number(form.age) })
+      onCreated({ id, name: form.name, age })
       setSuccess(`Usuario ${form.name} creado`)
       setForm(EMPTY_FORM)
-    } catch {
-      setError('No se pudo conectar con la API')
+    } catch (e) {
+      setError((e as Error).message) // con sfer: Missing permission: write_users
     } finally {
       setSending(false)
     }
