@@ -46,52 +46,79 @@ export function CreateUserForm({ onCreated }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Nuevo usuario</h2>
-      <input
-        placeholder="Nombre"
-        value={form.name}
-        onChange={(e) => update('name', e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Edad"
-        min={0}
-        value={form.age}
-        onChange={(e) => update('age', e.target.value)}
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => update('email', e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Contraseña"
-        minLength={4}
-        value={form.password}
-        onChange={(e) => update('password', e.target.value)}
-        required
-      />
-      <select
-        value={form.countryId}
-        onChange={(e) => update('countryId', e.target.value)}
-      >
-        {COUNTRIES.map((country) => (
-          <option key={country.id} value={country.id}>
-            {country.name}
-          </option>
-        ))}
-      </select>
-      <button type="submit" disabled={sending}>
-        {sending ? 'Creando...' : 'Crear'}
+    <form className="card form" onSubmit={handleSubmit}>
+      <h2 className="card-title">Nuevo usuario</h2>
+      <div className="form-grid">
+        <div className="field span-2">
+          <label htmlFor="new-name">Nombre</label>
+          <input
+            id="new-name"
+            value={form.name}
+            onChange={(e) => update('name', e.target.value)}
+            required
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="new-age">Edad</label>
+          <input
+            id="new-age"
+            type="number"
+            min={0}
+            value={form.age}
+            onChange={(e) => update('age', e.target.value)}
+            required
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="new-country">País</label>
+          <select
+            id="new-country"
+            value={form.countryId}
+            onChange={(e) => update('countryId', e.target.value)}
+          >
+            {COUNTRIES.map((country) => (
+              <option key={country.id} value={country.id}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field span-2">
+          <label htmlFor="new-email">Email</label>
+          <input
+            id="new-email"
+            type="email"
+            value={form.email}
+            onChange={(e) => update('email', e.target.value)}
+            required
+          />
+        </div>
+        <div className="field span-2">
+          <label htmlFor="new-password">Contraseña</label>
+          <input
+            id="new-password"
+            type="password"
+            minLength={4}
+            placeholder="Mínimo 4 caracteres"
+            value={form.password}
+            onChange={(e) => update('password', e.target.value)}
+            required
+          />
+        </div>
+      </div>
+      <button className="btn-primary" type="submit" disabled={sending}>
+        {sending ? 'Creando...' : 'Crear usuario'}
       </button>
-      {error && <p>{error}</p>}
-      {success && <p>{success}</p>}
+      {error && (
+        <p className="alert alert-error" role="alert">
+          {error}
+        </p>
+      )}
+      {success && (
+        <p className="alert alert-success" role="status">
+          {success}
+        </p>
+      )}
     </form>
   )
 }
