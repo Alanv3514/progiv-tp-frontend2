@@ -52,7 +52,7 @@ La URL de la API está en `.env.development` (`VITE_API_URL`).
 
 | # | Práctica | Endpoint | Estado |
 |---|---|---|---|
-| 1 | Ver el detalle de un usuario | `GET /user/{id}` | ⬜ |
+| 1 | Ver el detalle de un usuario | `GET /user/{id}` | ✅ |
 | 2 | "Cargando..." y errores | `GET /user` | ⬜ |
 | 3 | Buscar por nombre | `GET /user/search/{name}` | ⬜ |
 | 4 | Mostrar mis roles en el saludo | `GET /user/{id}` | ⬜ |
@@ -61,3 +61,9 @@ La URL de la API está en `.env.development` (`VITE_API_URL`).
 | 7 | Borrar un usuario | `DELETE /user/{id}` | ⬜ |
 | 8 | Sesión vencida (401 → login) | todos | ⬜ |
 | 9 | Para pensar: código repetido | — | ⬜ |
+
+## Respuestas a los "Para pensar"
+
+### Práctica 1: ¿por qué la lista no trae todos los datos?
+
+`GET /user` devuelve solo `id` y `name` porque es lo único que necesita la lista. Si trajera email, edad, país y roles de cada usuario, con 10.000 usuarios la respuesta sería enorme: la base tendría que resolver los joins con países y roles para todos, viajarían muchos más datos por la red y el navegador tendría que guardarlos, aunque el usuario mire el detalle de uno o dos. Pedir el detalle con `GET /user/{id}` solo al hacer clic cuesta un pedido más, pero es chico y se hace únicamente cuando hace falta. Además, la API expone lo mínimo indispensable (por ejemplo, no reparte los emails de todos).
