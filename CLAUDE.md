@@ -9,7 +9,17 @@ TP2 de frontend de Programación IV (UTN, Tecnicatura Universitaria en Programac
 - Enunciado: `docs/practica-bk-endpoints.pdf` ("Práctica: frontend React con lo visto hasta el paso 7").
 - Guía paso a paso del profe: `docs/guia-react-frontend.pdf`. El repo arranca en el estado final del **paso 7** (login, token en `localStorage`, Salir, lista de usuarios, saludo con `GET /user/me/id` → `GET /user/{id}`).
 - Código de referencia del profe (solo lectura, fuera del repo): `../../../profesor/frontend/utn-tup-2026-frontend-clase` (pasos 1–7) y `../../../profesor/frontend/utn-tup-2026-frontend` (solución completa pasos 8–13).
-- API (fuera del repo): `../../../profesor/backend/utn-tup-2026-python/clase-1-sqlmodel`.
+
+### Estructura del repo
+
+- `frontend/`: el TP (React + TS + Vite). Todos los comandos `npm` se corren desde acá. Estructura del paso 8: `src/api/` (`apiFetch` en `client.ts`), `src/hooks/useFetch.ts`, `src/components/`, `src/pages/`, `src/utils/`.
+- `backend/`: **copia** de la API de clase `clase-1-sqlmodel` (original en `../../../profesor/backend/utn-tup-2026-python/clase-1-sqlmodel`, commit `73005c1`). No modificarla salvo que el usuario lo pida; no versionar `.venv` ni `database.db`.
+- `docker-compose.yml` (raíz): levanta `backend/` en un contenedor Python. El usuario **no quiere Python instalado en su PC**: la API se corre siempre con Docker.
+- `docs/`: enunciado y guía.
+
+### Estado
+
+Las 9 prácticas, el refactor al paso 8 y el diseño están hechos y mergeados (PRs #1–#13).
 
 ## Las 9 prácticas (resumen del enunciado)
 
@@ -23,9 +33,9 @@ TP2 de frontend de Programación IV (UTN, Tecnicatura Universitaria en Programac
 8. **Sesión vencida**: si cualquier pedido responde 401, borrar el token y volver al login con "Tu sesión venció". El logout está en `App` y el fetch en `UserList`: pasar una prop `onUnauthorized`.
 9. **Para pensar** (sin código): contar cuántas veces se repite `import.meta.env.VITE_API_URL`, `Authorization: Bearer ...`, `if (!response.ok)` y los `useState` de loading/error; ¿cuántos archivos habría que tocar si cambia el header del token? Responder en el README.
 
-### Decisión abierta (preguntar al usuario antes de empezar)
+### Decisión tomada
 
-El enunciado pide resolverlo "con lo visto hasta el paso 7" (fetch directo en cada componente), y la práctica 9 busca que se sienta la repetición. Alternativa: usar desde el inicio la capa del paso 8 (`api/client.ts` con un único `apiFetch`, `api/users.ts`, hook `useFetch`) y responder la 9 explicando por qué. Las dos cumplen; **lo decide el usuario**.
+Las prácticas 1–8 se resolvieron con fetch directo (paso 7), la 9 se respondió en el README contando la repetición real, y después se hizo el refactor a la capa del paso 8. El código nuevo tiene que usar esa capa (`api/` + `useFetch`), no `fetch` directo.
 
 ## API — lo que usa este TP
 
@@ -49,16 +59,18 @@ El enunciado pide resolverlo "con lo visto hasta el paso 7" (fetch directo en ca
 ## Entorno
 
 - **Windows**, PowerShell. No usar WSL.
-- Node 26 / npm 11. Front en `http://localhost:5174` (puerto fijo en `vite.config.ts`). Usar `localhost`, no `127.0.0.1`.
-- API en `http://localhost:8000` (`VITE_API_URL` en `.env.development`). En el backend: `.venv\Scripts\activate` y `uvicorn main:app --reload --port 8000`.
+- Node 26 / npm 11. Front en `http://localhost:5174` (puerto fijo en `frontend/vite.config.ts`). Usar `localhost`, no `127.0.0.1`.
+- API en `http://localhost:8000` (`VITE_API_URL` en `frontend/.env.development`). Levantarla desde la raíz con `docker compose up -d --wait`; logs con `docker compose logs -f api`.
+- `docker` no está en el PATH de Git Bash: agregar `C:\Program Files\Docker\Docker\resources\bin` al PATH (también trae `docker-credential-desktop`). Si el motor no responde, abrir Docker Desktop.
+- En esta máquina no hay Python (solo el alias de la Microsoft Store).
 - Windows PowerShell 5.1 rompe las comillas dobles dentro de argumentos a programas nativos (por ejemplo `gh pr create --title '...'`): no usar `"` en títulos de PR, o usar comillas tipográficas.
 
 ## Convenciones de trabajo
 
-- **Una rama y un PR por práctica** (por ejemplo `feat/p01-detalle-usuario`), contra `main`. El usuario prueba y aprueba cada PR por separado.
+- **Una rama y un PR por cambio** (por ejemplo `feat/p01-detalle-usuario`), contra `main`. El usuario delegó el merge: después de abrir el PR, mergearlo con `gh pr merge --squash --delete-branch` (GitHub no deja aprobar un PR propio).
 - Commits en español, estilo conventional commits (`feat(p1): ...`, `fix: ...`).
 - **No agregar a Claude como coautor**: nada de `Co-Authored-By`, `Claude-Session` ni "Generated with Claude Code" en commits ni en PRs.
 - Archivos en UTF-8 sin BOM y finales de línea LF (`.editorconfig` y `.gitattributes` ya lo fuerzan). No editar código con `Set-Content`/`Out-File` de PowerShell 5.
-- Antes de cada PR: `npm run build` (incluye `tsc -b`) y `npm run lint` sin errores.
+- Antes de cada PR: en `frontend/`, `npm run build` (incluye `tsc -b`) y `npm run lint` sin errores.
 - Actualizar la tabla de estado de las prácticas en `README.md`.
 - El usuario prefiere separar lógica y vista (hooks / componentes / páginas), SOLID y código limpio, sin romper lo que pide cada práctica.

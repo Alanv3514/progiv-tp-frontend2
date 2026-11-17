@@ -1,37 +1,47 @@
 # TP2 Frontend — Programación IV (UTN TUP 2026)
 
-Frontend en React + TypeScript (Vite) que consume la API de clase `clase-1-sqlmodel` (FastAPI + JWT, usuarios/roles/permisos).
+Frontend en React + TypeScript (Vite) que consume la API de clase `clase-1-sqlmodel` (FastAPI + SQLModel + JWT, usuarios/roles/permisos). El repo trae las dos partes:
+
+```
+.
+├── frontend/            el TP: React + TypeScript + Vite
+├── backend/             copia de la API de clase clase-1-sqlmodel (no se modifica)
+├── docker-compose.yml   levanta backend/ sin instalar Python
+└── docs/                enunciado y guía de la materia
+```
 
 - Enunciado: [`docs/practica-bk-endpoints.pdf`](docs/practica-bk-endpoints.pdf) — 9 prácticas sobre la base de los pasos 1 a 7 de la guía.
 - Guía de la materia: [`docs/guia-react-frontend.pdf`](docs/guia-react-frontend.pdf).
+- `backend/` es una copia de `clase-1-sqlmodel` del repo de clase `utn-tup-2026-python` (commit `73005c1`), sin `.venv` ni `database.db`. Su documentación está en [`backend/README.md`](backend/README.md).
+
+> Este front **no** funciona con la API del TP1 (ABM en memoria): necesita el login con JWT, los roles y los endpoints de `clase-1-sqlmodel`.
 
 ## Requisitos
 
 - Node.js 20+ y npm
-- La API `clase-1-sqlmodel` corriendo en `http://localhost:8000` (con Docker o con Python, ver abajo)
-
-> Este front **no** funciona con la API del TP1 (ABM en memoria): necesita el login con JWT, los roles y los endpoints de `clase-1-sqlmodel`.
+- Docker (recomendado) o Python 3.12+ para la API
 
 ## Cómo correrlo
 
-1. Levantar la API.
+1. Levantar la API en `http://localhost:8000`.
 
-   **Opción A — con Docker (sin instalar Python).** Desde este repo:
+   **Opción A — con Docker (sin instalar Python).** Desde la raíz del repo:
 
    ```powershell
    docker compose up -d --wait
    ```
 
-   Usa [`docker-compose.yml`](docker-compose.yml): monta `clase-1-sqlmodel` en solo lectura (por defecto en `../../../profesor/backend/utn-tup-2026-python/clase-1-sqlmodel`; si está en otro lado, definir `API_PATH` en un `.env` junto al compose), instala las dependencias dentro del contenedor y levanta `uvicorn` en el puerto 8000. Cada arranque empieza con la base limpia.
+   [`docker-compose.yml`](docker-compose.yml) monta `backend/` en solo lectura, instala las dependencias dentro del contenedor y levanta `uvicorn` en el puerto 8000. No crea `.venv` ni `database.db` en el repo, y cada arranque empieza con la base limpia (los usuarios de prueba).
 
    ```powershell
    docker compose logs -f api   # ver la terminal de uvicorn (los 500 aparecen acá)
    docker compose down          # apagarla
    ```
 
-   **Opción B — con Python** (desde `clase-1-sqlmodel/`, en Windows):
+   **Opción B — con Python** (en Windows):
 
    ```powershell
+   cd backend
    python -m venv .venv
    .venv\Scripts\activate
    pip install -r requirements.txt
@@ -41,13 +51,14 @@ Frontend en React + TypeScript (Vite) que consume la API de clase `clase-1-sqlmo
 2. Levantar el front:
 
    ```powershell
+   cd frontend
    npm install
    npm run dev
    ```
 
-3. Abrir <http://localhost:5174> (usar `localhost`, no `127.0.0.1`).
+3. Abrir <http://localhost:5174> (usar `localhost`, no `127.0.0.1`). En el login hay botones para entrar con los usuarios de prueba.
 
-La URL de la API está en `.env.development` (`VITE_API_URL`).
+La URL de la API está en `frontend/.env.development` (`VITE_API_URL`).
 
 ### Usuarios de prueba (contraseña `123`)
 
@@ -56,7 +67,7 @@ La URL de la API está en `.env.development` (`VITE_API_URL`).
 | `mgomez@email.com` | ADMIN | `write_users`, `read_users`, `delete_users`, `update_users` |
 | `sfer@email.com` | REGULAR | `read_users` |
 
-## Scripts
+## Scripts (desde `frontend/`)
 
 | Comando | Qué hace |
 |---|---|
@@ -91,7 +102,7 @@ No del todo. Con `sfer` el botón aparece, se confirma y recién ahí la API res
 
 ### Práctica 9: código repetido (antes del paso 8)
 
-Conteo sobre el código con las prácticas 1 a 8 hechas (`src/`):
+Conteo sobre el código con las prácticas 1 a 8 hechas (`frontend/src/`, antes del refactor):
 
 | Qué | Veces | Archivos |
 |---|---|---|
@@ -117,7 +128,7 @@ Lo mismo pasa con cualquier regla transversal: cambiar la URL base, agregar un h
 Con la práctica 9 respondida, el código se pasó a la estructura del paso 8 de la guía, sin cambiar lo que hace la app:
 
 ```
-src/
+frontend/src/
 ├── api/
 │   ├── client.ts     apiFetch: URL base, token, response.ok, detail, 401 (un solo lugar)
 │   ├── auth.ts       login
