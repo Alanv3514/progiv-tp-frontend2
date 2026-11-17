@@ -3,16 +3,20 @@ import { deleteUser, getMe } from '../api/users'
 import type { NewUser, User } from '../api/types'
 import { CreateUserForm } from '../components/CreateUserForm'
 import { SearchForm } from '../components/SearchForm'
+import { Topbar } from '../components/Topbar'
 import { UserDetail } from '../components/UserDetail'
 import { UserRow } from '../components/UserRow'
 import { useFetch } from '../hooks/useFetch'
-import { formatRoles } from '../utils/format'
 import { ALL, emptyMessage, fetchList, matchesView, sameView } from '../utils/listView'
 import type { ListView } from '../utils/listView'
 
-// Pantalla principal: saludo (prácticas 4), alta (5), búsqueda (3),
-// Todos/Solo mayores (6), lista con borrar (2 y 7) y detalle (1).
-export function UsersPage() {
+interface Props {
+  onLogout: () => void
+}
+
+// Pantalla principal: saludo (práctica 4), búsqueda (3), Todos/Solo mayores (6),
+// lista con borrar (2 y 7), detalle (1) y alta (5).
+export function UsersPage({ onLogout }: Props) {
   const [view, setView] = useState<ListView>(ALL)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -53,41 +57,78 @@ export function UsersPage() {
     }
   }
 
+  const onlyAdults = view.kind === 'adults'
+
   return (
     <>
-      <h1>
-        Hola, {me?.name}
-        {me && me.roles.length > 0 && ` (${formatRoles(me.roles)})`}
-      </h1>
-      <CreateUserForm onCreated={handleCreated} />
-      <SearchForm
-        onSearch={(name) => changeView({ kind: 'search', name })}
-        onClear={() => changeView(ALL)}
-      />
-      <button
-        type="button"
-        onClick={() => changeView(view.kind === 'adults' ? ALL : { kind: 'adults' })}
-      >
-        {view.kind === 'adults' ? 'Todos' : 'Solo mayores'}
-      </button>
-      {loading && <p>Cargando...</p>}
-      {error && <p>{error}</p>}
-      {deleteError && <p>{deleteError}</p>}
-      {!loading && !error && users?.length === 0 && <p>{emptyMessage(view)}</p>}
-      {!loading && !error && users && users.length > 0 && (
-        <ul>
-          {users.map((user) => (
-            <UserRow
-              key={user.id}
-              user={user}
-              deleting={deletingId === user.id}
-              onSelect={setSelectedId}
-              onDelete={handleDelete}
+      <Topbar me={me} onLogout={onLogout} />
+      <main className="page">
+        <section className="card" aria-labelledby="users-title">
+          <h2 id="users-title" className="card-title">
+            Usuarios
+          </h2>
+          <div className="toolbar">
+            <SearchForm
+              onSearch={(name) => changeView({ kind: 'search', name })}
+              onClear={() => changeView(ALL)}
             />
-          ))}
-        </ul>
-      )}
-      {selectedId !== null && <UserDetail key={selectedId} userId={selectedId} />}
+            {/* práctica 6: alterna entre Todos y Solo mayores */}
+            <div className="segmented" role="group" aria-label="Filtrar por edad">
+              <button type="button" aria-pressed={!onlyAdults} onClick={() => changeView(ALL)}>
+                Todos
+              </button>
+              <button
+                type="button"
+                aria-pressed={onlyAdults}
+                onClick={() => changeView({ kind: 'adults' })}
+              >
+                Solo mayores
+              </button>
+            </div>
+          </div>
+
+          {deleteError && (
+            <p className="alert alert-error" role="alert">
+              {deleteError}
+            </p>
+          )}
+          {/* práctica 2: mientras carga o si hubo error, eso va en lugar de la lista */}
+          {loading && <p className="state">Cargando...</p>}
+          {error && (
+            <p className="alert alert-error" role="alert">
+              {error}
+            </p>
+          )}
+          {!loading && !error && users?.length === 0 && (
+            <p className="state">{emptyMessage(view)}</p>
+          )}
+          {!loading && !error && users && users.length > 0 && (
+            <ul className="user-list">
+              {users.map((user) => (
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  selected={selectedId === user.id}
+                  deleting={deletingId === user.id}
+                  onSelect={setSelectedId}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <div className="side">
+          {selectedId !== null ? (
+            <UserDetail key={selectedId} userId={selectedId} />
+          ) : (
+            <section className="card">
+              <p className="state">Elegí un usuario de la lista para ver su detalle.</p>
+            </section>
+          )}
+          <CreateUserForm onCreated={handleCreated} />
+        </div>
+      </main>
     </>
   )
 }
