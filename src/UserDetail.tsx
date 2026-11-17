@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
-import { formatRoles } from './format'
+import { errorMessage, formatRoles } from './format'
 import type { UserDetail as UserDetailData } from './types'
 
 interface Props {
   token: string
   userId: number
+  onUnauthorized: () => void
 }
 
 // Práctica 1: detalle de un usuario (GET /user/{id}).
 // El useEffect depende de userId: cada vez que se elige otro, se vuelve a pedir.
-export function UserDetail({ token, userId }: Props) {
+export function UserDetail({ token, userId, onUnauthorized }: Props) {
   const [user, setUser] = useState<UserDetailData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,20 +22,25 @@ export function UserDetail({ token, userId }: Props) {
 
     fetch(`${import.meta.env.VITE_API_URL}/user/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
-    }).then(async (response) => {
-      const data = await response.json()
-      if (ignore) return
-      if (!response.ok) {
-        setError(data.detail)
-        return
-      }
-      setUser(data)
     })
+      .then(async (response) => {
+        const data = await response.json()
+        if (ignore) return
+        if (response.status === 401) return onUnauthorized() // práctica 8
+        if (!response.ok) {
+          setError(errorMessage(data.detail))
+          return
+        }
+        setUser(data)
+      })
+      .catch(() => {
+        if (!ignore) setError('No se pudo conectar con la API')
+      })
 
     return () => {
       ignore = true
     }
-  }, [token, userId])
+  }, [token, userId, onUnauthorized])
 
   if (error) return <p>{error}</p>
   if (!user) return null

@@ -53,7 +53,12 @@ function emptyMessage(view: ListView): string {
 
 // Base de los pasos 5 y 6 de la guía: lista de usuarios (GET /user)
 // y saludo al usuario logueado (GET /user/me/id → GET /user/{id}).
-export function UserList({ token }: { token: string }) {
+interface Props {
+  token: string
+  onUnauthorized: () => void // práctica 8: un 401 cierra la sesión desde App
+}
+
+export function UserList({ token, onUnauthorized }: Props) {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true) // práctica 2
   const [error, setError] = useState<string | null>(null)
@@ -71,8 +76,9 @@ export function UserList({ token }: { token: string }) {
       .then(async (response) => {
         const data = await response.json()
         if (ignore) return
+        if (response.status === 401) return onUnauthorized() // práctica 8
         if (!response.ok) {
-          setError(data.detail) // 401, 403, 404…: viene un objeto { detail }
+          setError(errorMessage(data.detail)) // 403, 404…: viene un objeto { detail }
           return
         }
         setUsers(data) // 200: recién acá es una lista
@@ -88,7 +94,7 @@ export function UserList({ token }: { token: string }) {
     return () => {
       ignore = true
     }
-  }, [token, view])
+  }, [token, view, onUnauthorized])
 
   // Buscar, Limpiar y Todos/Solo mayores terminan acá:
   // se cambia view y el useEffect vuelve a pedir.
@@ -119,6 +125,7 @@ export function UserList({ token }: { token: string }) {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
+      if (response.status === 401) return onUnauthorized() // práctica 8
       if (!response.ok) {
         const data = await response.json()
         setDeleteError(errorMessage(data.detail))
@@ -136,12 +143,21 @@ export function UserList({ token }: { token: string }) {
   useEffect(() => {
     const headers = { Authorization: `Bearer ${token}` }
     const api = import.meta.env.VITE_API_URL
-    fetch(`${api}/user/me/id`, { headers }) // 1) ¿quién soy? → { id }
-      .then((response) => response.json())
-      .then(({ id }) => fetch(`${api}/user/${id}`, { headers })) // 2) mis datos
-      .then((response) => response.json())
-      .then(setMe)
-  }, [token])
+
+    async function loadMe() {
+      const idResponse = await fetch(`${api}/user/me/id`, { headers }) // 1) ¿quién soy? → { id }
+      if (idResponse.status === 401) return onUnauthorized()
+      if (!idResponse.ok) return // sin saludo; el error ya lo muestra la lista
+      const { id } = await idResponse.json()
+
+      const meResponse = await fetch(`${api}/user/${id}`, { headers }) // 2) mis datos
+      if (meResponse.status === 401) return onUnauthorized()
+      if (!meResponse.ok) return
+      setMe(await meResponse.json())
+    }
+
+    loadMe().catch(() => {}) // sin API, el error ya lo muestra la lista
+  }, [token, onUnauthorized])
 
   return (
     <>
@@ -149,7 +165,11 @@ export function UserList({ token }: { token: string }) {
         Hola, {me?.name}
         {me && me.roles.length > 0 && ` (${formatRoles(me.roles)})`}
       </h1>
-      <CreateUserForm token={token} onCreated={handleCreated} />
+      <CreateUserForm
+        token={token}
+        onCreated={handleCreated}
+        onUnauthorized={onUnauthorized}
+      />
       <SearchForm
         onSearch={(name) => changeView({ kind: 'search', name })}
         onClear={() => changeView(ALL)}
@@ -180,7 +200,12 @@ export function UserList({ token }: { token: string }) {
         </ul>
       )}
       {selectedId !== null && (
-        <UserDetail key={selectedId} token={token} userId={selectedId} />
+        <UserDetail
+          key={selectedId}
+          token={token}
+          userId={selectedId}
+          onUnauthorized={onUnauthorized}
+        />
       )}
     </>
   )
