@@ -53,7 +53,7 @@ La URL de la API está en `.env.development` (`VITE_API_URL`).
 | # | Práctica | Endpoint | Estado |
 |---|---|---|---|
 | 1 | Ver el detalle de un usuario | `GET /user/{id}` | ✅ |
-| 2 | "Cargando..." y errores | `GET /user` | ⬜ |
+| 2 | "Cargando..." y errores | `GET /user` | ✅ |
 | 3 | Buscar por nombre | `GET /user/search/{name}` | ⬜ |
 | 4 | Mostrar mis roles en el saludo | `GET /user/{id}` | ⬜ |
 | 5 | Alta de usuario | `POST /user` | ⬜ |
