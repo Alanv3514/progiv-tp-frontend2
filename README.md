@@ -8,11 +8,28 @@ Frontend en React + TypeScript (Vite) que consume la API de clase `clase-1-sqlmo
 ## Requisitos
 
 - Node.js 20+ y npm
-- La API `clase-1-sqlmodel` corriendo en `http://localhost:8000`
+- La API `clase-1-sqlmodel` corriendo en `http://localhost:8000` (con Docker o con Python, ver abajo)
+
+> Este front **no** funciona con la API del TP1 (ABM en memoria): necesita el login con JWT, los roles y los endpoints de `clase-1-sqlmodel`.
 
 ## Cómo correrlo
 
-1. Levantar la API (desde `clase-1-sqlmodel/`, en Windows):
+1. Levantar la API.
+
+   **Opción A — con Docker (sin instalar Python).** Desde este repo:
+
+   ```powershell
+   docker compose up -d --wait
+   ```
+
+   Usa [`docker-compose.yml`](docker-compose.yml): monta `clase-1-sqlmodel` en solo lectura (por defecto en `../../../profesor/backend/utn-tup-2026-python/clase-1-sqlmodel`; si está en otro lado, definir `API_PATH` en un `.env` junto al compose), instala las dependencias dentro del contenedor y levanta `uvicorn` en el puerto 8000. Cada arranque empieza con la base limpia.
+
+   ```powershell
+   docker compose logs -f api   # ver la terminal de uvicorn (los 500 aparecen acá)
+   docker compose down          # apagarla
+   ```
+
+   **Opción B — con Python** (desde `clase-1-sqlmodel/`, en Windows):
 
    ```powershell
    python -m venv .venv
