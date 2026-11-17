@@ -58,7 +58,13 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   } catch {
     // fetch solo falla si no hubo respuesta: la API está apagada, o respondió
     // un 500 sin headers CORS y el navegador no deja leerlo.
-    throw new ApiError(0, 'No se pudo conectar con la API')
+    // Desde el navegador no se pueden distinguir los dos casos, así que el
+    // mensaje nombra ambos (por ejemplo, un alta con un email repetido da 500).
+    throw new ApiError(
+      0,
+      'No se pudo conectar con la API. Si estaba andando, probablemente respondió ' +
+        'un error 500: revisen la terminal de uvicorn (docker compose logs api).',
+    )
   }
 
   const text = await response.text()
