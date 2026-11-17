@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import type { SubmitEvent } from 'react'
 import { errorMessage } from './format'
-import type { User } from './types'
+import type { NewUser } from './types'
 
 interface Props {
   token: string
-  onCreated: (user: User) => void
+  onCreated: (user: NewUser) => void
 }
 
 // No hay endpoint de países: las opciones van escritas a mano.
@@ -52,7 +52,8 @@ export function CreateUserForm({ token, onCreated }: Props) {
         setError(errorMessage(data.detail)) // con sfer: Missing permission: write_users
         return
       }
-      onCreated({ id: data.id, name: form.name }) // la API devuelve solo { id }
+      // la API devuelve solo { id }; el resto sale del form
+      onCreated({ id: data.id, name: form.name, age: Number(form.age) })
       setSuccess(`Usuario ${form.name} creado`)
       setForm(EMPTY_FORM)
     } catch {

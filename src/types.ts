@@ -16,6 +16,11 @@ export interface Country {
   name: string
 }
 
+// Lo que CreateUserForm avisa al crear: id (de la API) + datos del form.
+export interface NewUser extends User {
+  age: number
+}
+
 // GET /user/{id} → el detalle completo de un usuario.
 export interface UserDetail extends User {
   email: string

@@ -57,7 +57,7 @@ La URL de la API está en `.env.development` (`VITE_API_URL`).
 | 3 | Buscar por nombre | `GET /user/search/{name}` | ✅ |
 | 4 | Mostrar mis roles en el saludo | `GET /user/{id}` | ✅ |
 | 5 | Alta de usuario | `POST /user` | ✅ |
-| 6 | Solo mayores de edad | `GET /user_mayores` | ⬜ |
+| 6 | Solo mayores de edad | `GET /user_mayores` | ✅ |
 | 7 | Borrar un usuario | `DELETE /user/{id}` | ⬜ |
 | 8 | Sesión vencida (401 → login) | todos | ⬜ |
 | 9 | Para pensar: código repetido | — | ⬜ |
